@@ -10,10 +10,11 @@ class Adelante():
         self.funcion = sympify(self.parse().funcion)
         self.x = self.parse().x_zero
         self.h = self.parse().distance
+        self.n = self.parse().numero
 
     def __str__(self):
-        return '\nResultado de la derivada de {} en {}: {}. Con un error de: \
-{}'.format(self.funcion, self.x, self.derivada(), self.error())
+        return '\nValores para Xn: {} \nResultado de la derivada de {} en {}: {}. Con un error de: \
+{}'.format(self.value(), self.funcion, self.x, self.derivada(), self.error())
 
     def parse(self):
         parser = argparse.ArgumentParser(description='===== DIFERENCIAS HACIA \
@@ -27,6 +28,9 @@ class Adelante():
                             metavar='DISTANCE',
                             type=float, required=True,
                             help='Ingrese la distancia entre puntos')
+        parser.add_argument('-n', '--numero', action='store', metavar='NUMERO',
+                            type=int,
+                            required=True, help='Ingrese el valor de n')
 
         args = parser.parse_args()
         return args
@@ -39,10 +43,9 @@ class Adelante():
 
         x = Symbol('x')
         values = list()
-        for i in range(6):
+        for i in range(self.n+1):
             values.append(round(f.subs(x, a), 6))
             a += h
-        print(values)
         return values
 
     # calcula delta f
@@ -62,20 +65,32 @@ class Adelante():
         while len(deltas) > 1:
             deltas = self.delta(deltas)
             deltas_definitivos.append(round(deltas[0], 6))
-        print(deltas_definitivos)
+        print('Deltas: ', deltas_definitivos)
         return deltas_definitivos
 
     def derivada(self):
-        d = self.dif()
-        f = ((1/self.h)*(d[0]-(1/2)*d[1]+(1/3)*d[2]-(1/4)*d[3]+(1/5)*d[4]))
+        f = ((1/self.h)*(self.termino()))
         return round(f, 6)
+
+    def termino(self):
+        t = (self.n)
+        signo = -1
+        result = 0
+        d = self.dif()
+
+        for i in range(t):
+            n = d[i] * (1/(i+1))*(signo**i)
+            result += n
+        return result
 
     def error(self):
         x = Symbol('x')
-        derivada = diff(self.funcion, x, 6)
-        resul = derivada.subs(x, self.x)
-        e = (((-1)**5)*(self.h**5)*((resul)/(6)))
-        return round(abs(e), 8)
+        max_deriv = list()
+        derivada = diff(self.funcion, x, self.n + 1)
+        for i in self.value():
+            max_deriv.append(derivada.subs(x, i))
+        e = (((-1)**self.n)*(self.h**self.n)*((max(max_deriv))/(self.n + 1)))
+        return (abs(e))
 
 
 if __name__ == '__main__':
