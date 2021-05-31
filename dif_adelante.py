@@ -1,8 +1,7 @@
 #!/usr/bin/python3
 
 import argparse
-from sympy import Symbol, sympify
-from sympy import *
+from sympy import Symbol, sympify, diff
 
 
 class Adelante():
@@ -11,18 +10,23 @@ class Adelante():
         self.funcion = sympify(self.parse().funcion)
         self.x = self.parse().x_zero
         self.h = self.parse().distance
-    
+
     def __str__(self):
-        return '\nResultado de la derivada de {} en {}: {}'.format(self.funcion, self.x ,self.derivada())
+        return '\nResultado de la derivada de {} en {}: {}. Con un error de: \
+{}'.format(self.funcion, self.x, self.derivada(), self.error())
 
     def parse(self):
-        parser = argparse.ArgumentParser(description='===== DIFERENCIAS HACIA ADELANTE =====')
-        parser.add_argument('-f', '--funcion', action='store', metavar='FUNCION',
+        parser = argparse.ArgumentParser(description='===== DIFERENCIAS HACIA \
+            ADELANTE =====')
+        parser.add_argument('-f', '--funcion', action='store',
+                            metavar='FUNCION',
                             type=str, required=True, help='Ingrese la Funcion')
         parser.add_argument('-x', '--x_zero', action='store', metavar='X_ZERO',
                             type=float, required=True, help='Ingrese X cero')
-        parser.add_argument('-d', '--distance', action='store', metavar='DISTANCE',
-                            type=float, required=True, help='Ingrese la distancia entre puntos')
+        parser.add_argument('-d', '--distance', action='store',
+                            metavar='DISTANCE',
+                            type=float, required=True,
+                            help='Ingrese la distancia entre puntos')
 
         args = parser.parse_args()
         return args
@@ -49,7 +53,7 @@ class Adelante():
             df.append(value[i+1]-value[i])
         return df
 
-    #calcula delta n de f
+    # calcula delta n de f
     def dif(self):
         deltas_definitivos = list()
         deltas = self.delta(self.value())
@@ -60,15 +64,19 @@ class Adelante():
             deltas_definitivos.append(round(deltas[0], 6))
         print(deltas_definitivos)
         return deltas_definitivos
-    
+
     def derivada(self):
         d = self.dif()
-        f = ((1/self.h)*(d[0]-(1/2)*d[1]+(1/3)*d[2]+(1/4)*d[3]+(1/5)*d[4]))
+        f = ((1/self.h)*(d[0]-(1/2)*d[1]+(1/3)*d[2]-(1/4)*d[3]+(1/5)*d[4]))
         return round(f, 6)
-    
+
     def error(self):
-        e = ((-1)**5)*(self.h**5)*(()/())
-        return 
+        x = Symbol('x')
+        derivada = diff(self.funcion, x, 6)
+        resul = derivada.subs(x, self.x)
+        e = (((-1)**5)*(self.h**5)*((resul)/(6)))
+        return round(abs(e), 8)
+
 
 if __name__ == '__main__':
     print('\n====== METODO DE DIFERENCIAS HACIA ADELANTE =======')
